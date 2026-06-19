@@ -14,6 +14,7 @@ from pathlib import Path
 import environ
 from decouple import config
 import os
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -81,6 +82,34 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+SIMPLE_JWT = {
+
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+
+    # Rotate refresh tokens
+    "ROTATE_REFRESH_TOKENS": True,
+
+    # Blacklist old refresh tokens
+    "BLACKLIST_AFTER_ROTATION": True,
+
+    # Update last login
+    "UPDATE_LAST_LOGIN": True,
+
+    # Algorithm
+    "ALGORITHM": "HS256",
+
+    # Header type
+    "AUTH_HEADER_TYPES": ("Bearer",),
+
+    # User ID field
+    "USER_ID_FIELD": "id",
+
+    "USER_ID_CLAIM": "user_id",
+
+}
 
 LOGGING = {
     "version": 1,

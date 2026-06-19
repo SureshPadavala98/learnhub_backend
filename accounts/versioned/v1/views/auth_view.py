@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework import status
+from datetime import datetime
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from core.helpers.custom_pagination import (
@@ -60,12 +61,14 @@ class LoginAPIView(APIView):
         user = serializer.validated_data["user"]
 
         refresh = RefreshToken.for_user(user)
-
+        access_token = refresh.access_token
         return CustomResponse.success(
             message="Login Successful",
             data={
-                "access": str(refresh.access_token),
+                "access_token": str(refresh.access_token),
                 "refresh": str(refresh),
+                "access_token_expiry": datetime.fromtimestamp(access_token["exp"]).isoformat(),
+                "refresh_token_expiry": datetime.fromtimestamp(refresh["exp"]).isoformat(),
                 "user":{
                     "id": user.id,
                     "email": user.email,

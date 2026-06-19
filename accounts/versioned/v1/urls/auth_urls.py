@@ -1,0 +1,10 @@
+from django.urls import path
+from accounts.versioned.v1.views import (
+    auth_view
+)
+
+urlpatterns = [
+    path('register/', auth_view.RegisterAPIView.as_view(),name='register'),
+    path('login/', auth_view.LoginAPIView.as_view(), name='login'),
+    path('logout/', auth_view.LogoutAPIView.as_view(),name='logout'),
+]

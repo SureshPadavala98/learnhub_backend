@@ -7,7 +7,9 @@ from accounts.models.user_model import (
 from core.utils.choice_fields import (
     UserRole
 )
-
+from  mentor.models.courses import (
+    Mentor
+)
 class RegisterSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=255)
     email = serializers.EmailField()
@@ -74,3 +76,14 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'role'
         ]
+
+
+class MentorRegistrationSerializer(serializers.Serializer):
+
+    bio = serializers.CharField(required=False,allow_blank=True)
+    designation = serializers.CharField(required=False,allow_blank=True)
+    linkedin_url = serializers.CharField(required=False,allow_blank=True)
+    website = serializers.CharField(required=False,allow_blank=True)
+    years_of_experience = serializers.IntegerField(min_value=0)
+    profile_image = serializers.ImageField(required=False,allow_null=True)
+    expertise = serializers.CharField(max_length=200)

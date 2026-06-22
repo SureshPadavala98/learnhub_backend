@@ -30,3 +30,8 @@ class ChannelType(models.TextChoices):
     EMAIL = 'EMAIL', 'Email'
     SMS = 'SMS', 'SMS'
     WHATSAPP = 'WHATSAPP', 'WhatsApp'
+
+class UserStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    APPROVED = "approved", "Approved"
+    REJECTED = "rejected", "Rejected"

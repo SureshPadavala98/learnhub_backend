@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'accounts',
     'common',
     'mentor',
+    'super_admin',
 ]
 
 MIDDLEWARE = [

@@ -13,6 +13,10 @@ from core.utils.choice_fields import (
 from accounts.models.user_model import (
     User
 )
+from core.utils.choice_fields import (
+    UserRole,
+    UserStatus
+)
 
 class Mentor(CommonModel):
     user = models.OneToOneField(User,on_delete=models.CASCADE,related_name="mentor")
@@ -23,6 +27,7 @@ class Mentor(CommonModel):
     years_of_experience = models.PositiveBigIntegerField(blank=True,null=True)
     profile_image = models.ImageField(upload_to="mentor/profiles",blank=True)
     expertise = models.CharField(max_length=200,blank=True,null=True,help_text="Python,Java,Html,SQL")
+    status = models.CharField(max_length=50,choices=UserStatus.choices,default=UserStatus.PENDING)
 
     class Meta:
         db_table = "mentors"
@@ -31,7 +36,7 @@ class Mentor(CommonModel):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"Mentor {self.user.full_name}"
+        return f"Mentor - {self.user.full_name} With Status - {self.status}"
 
 class CourseCategory(CommonModel):
     name = models.CharField(max_length=100,unique=True)

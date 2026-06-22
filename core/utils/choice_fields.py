@@ -17,3 +17,16 @@ class InquiryStatus(models.TextChoices):
     CONTACTED = "CONTACTED", "Contacted"
     ENROLLED = "ENROLLED", "Enrolled"
     REJECTED = "REJECTED", "Rejected"
+
+
+class OTPType(models.TextChoices):
+    EMAIL_VERIFICATION = 'EMAIL_VERIFICATION', 'Email Verification'
+    PASSWORD_RESET = 'PASSWORD_RESET', 'Password Reset'
+    LOGIN_OTP = 'LOGIN_OTP', 'Login Otp'
+    PHONE_VERIFICATION  = 'PHONE_VERIFICATION', 'Phone Verification'
+    
+
+class ChannelType(models.TextChoices):
+    EMAIL = 'EMAIL', 'Email'
+    SMS = 'SMS', 'SMS'
+    WHATSAPP = 'WHATSAPP', 'WhatsApp'

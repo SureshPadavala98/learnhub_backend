@@ -4,12 +4,16 @@ from django.contrib.auth.password_validation import validate_password
 from accounts.models.user_model import (
     User
 )
+from core.utils.choice_fields import (
+    UserRole
+)
 
 class RegisterSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=255)
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True,min_length=8)
     confirm_password = serializers.CharField(write_only=True)
+    role = serializers.ChoiceField(choices=UserRole.choices)
 
     def validate_email(self,value):
         if User.objects.filter(email=value).exists():
@@ -58,3 +62,15 @@ class LoginSerializer(serializers.Serializer):
 class LogoutSerializer(serializers.Serializer):
 
     refresh = serializers.CharField()
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'full_name',
+            'email',
+            'role'
+        ]

@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser,BaseUserManager
 from django.db import models
 from core.utils.choice_fields import (
     UserRole,
+    OTPType,
+    ChannelType,
 )
 from core.utils.common_models import (
     CommonModel
@@ -82,3 +84,29 @@ class Profile(CommonModel):
 
     def __str__(self):
         return f"{self.user.username}-Profile"
+    
+
+
+class VerificationOTP(CommonModel):
+    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='verification_otps')
+    otp_hash = models.CharField(max_length=255)
+    otp_type = models.CharField(max_length=50,choices=OTPType.choices)
+    channel_type = models.CharField(max_length=50,choices=ChannelType.choices,default=ChannelType.EMAIL)
+    destination = models.CharField(max_length=20,null=True,blank=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    attempt_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = 'verification_otps'
+        verbose_name = 'Vefification OTP'
+        verbose_name_plural = 'Vefification OTPs'
+
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['otp_type']),
+            models.Index(fields=["expires_at"]),
+        ]
+
+    def __str__(self):
+        return f"User {self.user.full_name} - OTP TYPE  -- {self.otp_type}"

@@ -32,10 +32,11 @@ class RegisterAPIView(APIView):
             raise_exception=True
         )
 
-        user = AuthService.create_user(
+        user = AuthService.create_base_user(
             full_name=serializer.validated_data['full_name'],
             email=serializer.validated_data['email'],
             password=serializer.validated_data['password'],
+            role=serializer.validated_data['role'],
         )
 
         return CustomResponse.success(

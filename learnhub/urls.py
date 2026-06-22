@@ -22,6 +22,7 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('accounts.versioned.v1.urls')),
+    path('super_admin/', include('super_admin.versioned.v1.urls'))
 ]
 
 if settings.DEBUG:

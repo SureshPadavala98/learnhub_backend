@@ -15,9 +15,12 @@ from accounts.services.auth_service import (
 from accounts.versioned.v1.serializers.auth_serializer import (
     RegisterSerializer,
     LoginSerializer,
-    LogoutSerializer
+    LogoutSerializer,
+    MentorRegistrationSerializer
 )
-
+from mentor.models.courses import (
+    Mentor
+)
 
 
 class RegisterAPIView(APIView):
@@ -45,8 +48,36 @@ class RegisterAPIView(APIView):
             status_code=status.HTTP_201_CREATED
         )
     
+class MentorRegisrationAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        serializer = MentorRegistrationSerializer(
+            data = request.data
+        )
 
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        validated_data = serializer.validated_data
+
+        mentor = Mentor.objects.create(
+            user = request.user,
+            bio = validated_data.get('bio', ''),
+            designation= validated_data.get('designation', ''),
+            website= validated_data.get('website', ''),
+            years_of_experience= validated_data.get('years_of_experience', ''),
+            profile_image= validated_data.get('profile_image', ''),
+            expertise= validated_data.get('expertise', ''),
+
+        )
+
+        return CustomResponse.success(
+            message="Mentor registered successfully",
+            data=serializer.data,
+            status_code=status.HTTP_201_CREATED
+        )
 class LoginAPIView(APIView):
     authentication_classes = []
     permission_classes = []
@@ -102,3 +133,4 @@ class LogoutAPIView(APIView):
             message="Logout successful",
             data={}
         )
+    

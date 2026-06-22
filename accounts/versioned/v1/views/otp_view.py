@@ -48,7 +48,12 @@ class SendEmailOTPAPIView(APIView):
         otp = OTPService.create_otp(user=user,otp_type=otp_type)
 
         try:
-            EmailService.send_otp_email(email=email,otp=otp)
+            EmailService.send_otp_email(
+                email=email,
+                otp=otp,
+                user_name=user.full_name if user else "",
+                otp_type=otp_type,
+            )
         except EmailDeliveryError as exc:
             return CustomResponse.error(
                 message="OTP could not be sent",

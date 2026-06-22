@@ -9,6 +9,8 @@ urlpatterns = [
     path('login/', auth_view.LoginAPIView.as_view(), name='login'),
     path('logout/', auth_view.LogoutAPIView.as_view(),name='logout'),
 
+    path('mentor/register/',auth_view.MentorRegisrationAPIView.as_view(),name='mentor-register'),
+
     # OTP'S
     path('send_otp/',otp_view.SendEmailOTPAPIView.as_view()),
     path('verify_otp/',otp_view.VerifyOTPAPIView.as_view()),

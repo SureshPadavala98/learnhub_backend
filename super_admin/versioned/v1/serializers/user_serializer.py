@@ -13,6 +13,7 @@ class MentorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mentor
         fields = [
+            'id',
             'user',
             'bio',
             'designation',

@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from django.shortcuts import get_list_or_404, get_object_or_404
 from core.utils.choice_fields import (
     UserRole,
     UserStatus,
@@ -15,9 +16,20 @@ from super_admin.versioned.v1.serializers.user_serializer import (
 from mentor.models.courses import (
     Mentor
 )
+from core.helpers.permissions import (
+    IsAdmin,
+    IsStudent,
+    IsMentor,
+    IsAdminOrMentor,
+    IsAdminOrStudent,
+    IsVerifiedUser
+)
+
+
+
 
 class MentorListAPIView(APIView):
-    permission_classes = []
+    permission_classes = [IsAdmin]
     custom_pagination = CustomPageNumberPagination
 
     def get(self,request):
@@ -34,3 +46,39 @@ class MentorListAPIView(APIView):
             message="Mentors fetched successfully",
             data =paginated_response.data,
         )
+    
+class MentorStatusDetailAPIVIEW(APIView):
+    permission_classes = [IsAdmin]
+
+
+    def get(self,request,mentor_id):
+        mentor = get_object_or_404(Mentor,pk=mentor_id)
+                
+        serializer = MentorSerializer(mentor,context={"request":request})
+
+        return CustomResponse.success(
+            message="Mentors fetched successfully",
+            data =serializer.data,
+        )
+
+
+    def put(self,request,mentor_id):
+
+        mentor = get_object_or_404(Mentor,pk=mentor_id)
+
+        serializer = MentorSerializer(mentor,partial=True,data=request.data)
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        serializer.save()
+
+        return CustomResponse.success(
+            message="Mentor Status updated successfully.",
+            data=serializer.data
+        )
+
+
+
+

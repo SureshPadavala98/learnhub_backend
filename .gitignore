@@ -50,3 +50,4 @@ dist/
 docker-compose.override.yml
 accounts/migrations/
 mentor/migrations/
+super_admin/migrations/

@@ -14,4 +14,14 @@ urlpatterns = [
     path('course-category/', courses_view.CourseCategoryAPIVIEW.as_view(), name='course-categories'),
     path('course-category-detail/<uuid:category_id>/', courses_view.CourseCategoryDetailAPIVIEW.as_view(), name='course-categories'),
 
+    path('courses/',courses_view.CourseCreateListAPIVIEW.as_view(), name='mentor-courses'),
+    path('course-detail/<uuid:course_id>/', courses_view.CourseDetailAPIVIEW.as_view(), name='course-detail'),
+    path('category-courses/<uuid:category_id>/', courses_view.CourseByCategoryListAPIView.as_view(), name='category-courses'),
+
+    # Course Inquiries
+    path('course-enquiries/', courses_view.CourseEnquiryAPIVIEW.as_view(), name='course-enquiry'),
+    path('course-enquiry-detail/<uuid:enquiry_id>/',courses_view.CourseEnquiryDetailAPIView.as_view(), name='course-enquiries-detail'),
+    
+    
+
 ]

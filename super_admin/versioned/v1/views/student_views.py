@@ -1,15 +1,18 @@
 from rest_framework.views import APIView
 from rest_framework import status
 from django.shortcuts import get_list_or_404, get_object_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404
 from core.helpers.custom_response_hander import CustomResponse
 from core.helpers.custom_pagination import (
     CustomPageNumberPagination
 )
 from super_admin.models.student_models import (
-    Testimonial
+    Testimonial,
+    Placement
 )
 from super_admin.versioned.v1.serializers.student_serializer import (
     TestimonialSerializer,
+    PlacementSerializer
 )
 from core.helpers.permissions import (
     IsAdmin,
@@ -18,6 +21,9 @@ from core.helpers.permissions import (
     IsAdminOrMentor,
     IsAdminOrStudent,
     IsVerifiedUser
+)
+from core.utils.common_models import (
+    BaseAPIView
 )
 
 
@@ -106,5 +112,80 @@ class TestimonialDetailAPIView(APIView):
         
         return CustomResponse.success(
             message="Testimonial deleted successfully",
+            data={}
+        ) 
+    
+
+
+
+class PlacementCreateListAPIView(BaseAPIView):
+    permission_classes = [IsAdmin]
+
+    def post(self, request):
+        serializer = PlacementSerializer(data=request.data)
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        serializer.save()
+
+        return CustomResponse.success(
+            message="Placement Profile added successfully",
+            data=serializer.data
+        ) 
+    
+    def get(self,request):
+        placements = Placement.objects.filter(is_active=True).order_by("-created_at")
+
+        paginator, paginated_categories = self.paginate_queryset(placements,request)
+
+        serializer = PlacementSerializer(paginated_categories,many=True,context={"request": request})
+
+        paginated_response = paginator.get_paginated_response(serializer.data)
+        
+        return CustomResponse.success(
+            message="Placements fetched successfully",
+            data=paginated_response.data
+        )
+    
+
+class PlacementDetailAPIView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self,request, id):
+        placement_obj = get_object_or_404(Placement,pk=id,is_active=True)
+
+        serializer = PlacementSerializer(placement_obj,context={"request": request})
+        
+        return CustomResponse.success(
+            message="Placement Detail fetched successfully",
+            data=serializer.data
+        )
+    
+
+    def put(self, request,id):
+        placement_obj = get_object_or_404(Placement,pk=id,is_active=True)
+
+        serializer = PlacementSerializer(placement_obj,data=request.data,partial=True)
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        serializer.save()
+
+        return CustomResponse.success(
+            message="Placement Updated successfully",
+            data=serializer.data
+        )
+    
+    def delete(self,request, id):
+        placement_obj = get_object_or_404(Placement,pk=id,is_active=True)
+
+        placement_obj.delete()
+        
+        return CustomResponse.success(
+            message="Placement deleted fetched successfully",
             data={}
         ) 

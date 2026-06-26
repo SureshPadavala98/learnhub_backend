@@ -24,8 +24,9 @@ from core.helpers.permissions import (
     IsAdminOrStudent,
     IsVerifiedUser
 )
-
-
+from core.utils.common_models import (
+    BaseAPIView
+)
 
 
 class MentorListAPIView(APIView):
@@ -78,7 +79,6 @@ class MentorStatusDetailAPIVIEW(APIView):
             message="Mentor Status updated successfully.",
             data=serializer.data
         )
-
 
 
 

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from super_admin.models.student_models import (
-    Testimonial
+    Testimonial,
+    Placement,
 )
 
 
@@ -46,3 +47,35 @@ class TestimonialSerializer(serializers.ModelSerializer):
                 "Rating must be between 1 and 5."
             )
         return value
+    
+
+class PlacementSerializer(serializers.ModelSerializer):
+
+    course_name = serializers.CharField(source="course.title",read_only=True)
+
+    class Meta:
+        model = Placement
+
+        fields = [
+            "id",
+            "student_name",
+            "student_photo",
+            "company_name",
+            "company_logo",
+            "designation",
+            "package",
+            "course",
+            "course_name",
+            "placement_date",
+            "testimonial",
+            "is_featured",
+            "display_order",
+            "created_at",
+            "updated_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+        ]

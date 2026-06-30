@@ -70,3 +70,108 @@ class Placement(CommonModel):
     def __str__(self):
         return f"{self.student_name} - {self.company_name}"
 
+
+
+class Certificate(CommonModel):
+    certificate_id = models.CharField(max_length=25,unique=True,editable=False)
+
+    student_name = models.CharField(max_length=150)
+
+    student_email = models.EmailField()
+
+    course = models.ForeignKey("mentor.Course",on_delete=models.PROTECT,related_name="certificates")
+
+    mentor = models.ForeignKey("mentor.Mentor",on_delete=models.PROTECT,related_name="certificates")
+
+    certificate_file = models.FileField(upload_to="certificates/")
+
+    issued_date = models.DateField()
+
+    grade = models.CharField(max_length=50,blank=True)
+
+    remarks = models.TextField(blank=True)
+
+    is_verified = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "certificates"
+
+        verbose_name = "Certificate"
+
+        verbose_name_plural = "Certificates"
+
+        ordering = ["-issued_date"]
+
+        indexes = [
+            models.Index(fields=["certificate_id"]),
+            models.Index(fields=["student_email"]),
+            models.Index(fields=["issued_date"]),
+        ]
+
+    def save(self, *args, **kwargs):
+
+        if not self.certificate_id:
+
+            next_number = Certificate.objects.count() + 1
+
+            self.certificate_id = (
+                f"STEPUPMARK-CERT-{next_number:06d}"
+            )
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.certificate_id
+
+
+class CertificateTemplate(CommonModel):
+    name = models.CharField(max_length=150,unique=True,)
+
+    background_image = models.ImageField(upload_to="certificate_templates/backgrounds/")
+
+    signature_image = models.ImageField(upload_to="certificate_templates/signatures/",blank=True,null=True,)
+    title = models.CharField(max_length=200,default="Certificate of Completion")
+    sub_title = models.CharField(max_length=250,blank=True,)
+    description = models.TextField(
+        help_text="""
+        Available Variables
+
+        {{student_name}}
+        {{course_name}}
+        {{mentor_name}}
+        {{issued_date}}
+        {{certificate_id}}
+        {{platform_name}}
+        """
+            )
+
+    layout = models.JSONField(default=dict,help_text="""Stores coordinates, font settings and alignment.""")
+    is_default = models.BooleanField(default=False,)
+    is_active = models.BooleanField(default=True,)
+
+    class Meta:
+        db_table = "certificate_templates"
+        verbose_name = "Certificate Template"
+        verbose_name_plural = "Certificate Templates"
+        ordering = ["-created_at",]
+        indexes = [
+            models.Index(fields=["is_default"]),
+            models.Index(fields=["is_active"]),
+        ]
+
+    def save(self, *args, **kwargs):
+
+        if self.is_default:
+
+            CertificateTemplate.objects.filter(
+                is_default=True
+            ).exclude(
+                pk=self.pk
+            ).update(
+                is_default=False
+            )
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name

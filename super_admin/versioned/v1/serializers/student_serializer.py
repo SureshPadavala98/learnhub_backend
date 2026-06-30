@@ -2,6 +2,9 @@ from rest_framework import serializers
 from super_admin.models.student_models import (
     Testimonial,
     Placement,
+    Certificate,
+    CertificateTemplate,
+    
 )
 
 
@@ -79,3 +82,92 @@ class PlacementSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class CertificateSerializer(serializers.ModelSerializer):
+
+    course_name = serializers.CharField(source="course.title",read_only=True)
+
+    mentor_name = serializers.CharField(source="mentor.user.full_name",read_only=True)
+
+    class Meta:
+        model = Certificate
+
+        fields = [
+            "id",
+            "certificate_id",
+            "student_name",
+            "student_email",
+            "course",
+            "course_name",
+            "mentor",
+            "mentor_name",
+            "certificate_file",
+            "issued_date",
+            "grade",
+            "remarks",
+            "is_verified",
+            "created_at",
+            "updated_at",
+
+        ]
+
+        read_only_fields = (
+            "id",
+            "certificate_id",
+            "created_at",
+            "updated_at",
+        )
+    
+
+
+class CertificateTemplateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CertificateTemplate
+
+        fields = [
+            "id",
+            "name",
+            "background_image",
+            "signature_image",
+            "title",
+            "sub_title",
+            "description",
+            "layout",
+            "is_default",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+
+        read_only_fields = (
+            "id",
+            "created_at",
+            "updated_at",
+        )
+
+    def validate_name(self, value):
+
+        queryset = CertificateTemplate.objects.filter(
+            name__iexact=value.strip()
+        )
+
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+
+        if queryset.exists():
+            raise serializers.ValidationError(
+                "Template name already exists."
+            )
+
+        return value.strip()
+
+    def validate_layout(self, value):
+
+        if not isinstance(value, dict):
+            raise serializers.ValidationError(
+                "Layout must be a valid JSON object."
+            )
+
+        return value

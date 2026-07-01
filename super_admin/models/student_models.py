@@ -1,6 +1,6 @@
+import re
 from django.db import models
 from core.utils.common_models import CommonModel
-import re
 
 class Testimonial(CommonModel):
     student_name = models.CharField(max_length=150)
@@ -127,7 +127,7 @@ class CertificateTemplate(CommonModel):
 
 class Certificate(CommonModel):
     certificate_id = models.CharField(max_length=25,unique=True,editable=False)
-    template = models.ForeignKey(CertificateTemplate,on_delete=models.PROTECT,related_name="certificates",null=True,blank=True,)
+
 
     student_name = models.CharField(max_length=150)
 

@@ -148,16 +148,6 @@ class CertificateSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
-    template = serializers.PrimaryKeyRelatedField(
-        queryset=CertificateTemplate.objects.filter(
-            is_active=True
-        )
-    )
-
-    template_details = CertificateTemplateSerializer(
-        source="template",
-        read_only=True
-    )
 
     class Meta:
         model = Certificate
@@ -172,13 +162,11 @@ class CertificateSerializer(serializers.ModelSerializer):
             "course",
             "course_name",
 
-            "template",
-            "template_details",
-
             "mentor",
             "mentor_name",
 
             "certificate_file",
+            "qr_code",
 
             "issued_date",
 
@@ -194,6 +182,7 @@ class CertificateSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "certificate_id",
+            "qr_code",
             "created_at",
             "updated_at",
         )

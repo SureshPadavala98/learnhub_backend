@@ -1,6 +1,6 @@
 from django.db import models
 from core.utils.common_models import CommonModel
-
+import re
 
 class Testimonial(CommonModel):
     student_name = models.CharField(max_length=150)
@@ -71,59 +71,6 @@ class Placement(CommonModel):
         return f"{self.student_name} - {self.company_name}"
 
 
-
-class Certificate(CommonModel):
-    certificate_id = models.CharField(max_length=25,unique=True,editable=False)
-
-    student_name = models.CharField(max_length=150)
-
-    student_email = models.EmailField()
-
-    course = models.ForeignKey("mentor.Course",on_delete=models.PROTECT,related_name="certificates")
-
-    mentor = models.ForeignKey("mentor.Mentor",on_delete=models.PROTECT,related_name="certificates")
-
-    certificate_file = models.FileField(upload_to="certificates/")
-
-    issued_date = models.DateField()
-
-    grade = models.CharField(max_length=50,blank=True)
-
-    remarks = models.TextField(blank=True)
-
-    is_verified = models.BooleanField(default=True)
-
-    class Meta:
-        db_table = "certificates"
-
-        verbose_name = "Certificate"
-
-        verbose_name_plural = "Certificates"
-
-        ordering = ["-issued_date"]
-
-        indexes = [
-            models.Index(fields=["certificate_id"]),
-            models.Index(fields=["student_email"]),
-            models.Index(fields=["issued_date"]),
-        ]
-
-    def save(self, *args, **kwargs):
-
-        if not self.certificate_id:
-
-            next_number = Certificate.objects.count() + 1
-
-            self.certificate_id = (
-                f"STEPUPMARK-CERT-{next_number:06d}"
-            )
-
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.certificate_id
-
-
 class CertificateTemplate(CommonModel):
     name = models.CharField(max_length=150,unique=True,)
 
@@ -175,3 +122,75 @@ class CertificateTemplate(CommonModel):
 
     def __str__(self):
         return self.name
+    
+
+
+class Certificate(CommonModel):
+    certificate_id = models.CharField(max_length=25,unique=True,editable=False)
+    template = models.ForeignKey(CertificateTemplate,on_delete=models.PROTECT,related_name="certificates",null=True,blank=True,)
+
+    student_name = models.CharField(max_length=150)
+
+    student_email = models.EmailField(db_index=True)
+
+    course = models.ForeignKey("mentor.Course",on_delete=models.PROTECT,related_name="certificates")
+
+    mentor = models.ForeignKey("mentor.Mentor",on_delete=models.PROTECT,related_name="certificates")
+
+    certificate_file = models.FileField(upload_to="certificates/",null=True,blank=True)
+    qr_code = models.ImageField(upload_to="certificates/qr_codes/",blank=True,null=True,)
+    issued_date = models.DateField()
+
+    grade = models.CharField(max_length=50,blank=True)
+
+    remarks = models.TextField(blank=True)
+
+    is_verified = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "certificates"
+
+        verbose_name = "Certificate"
+
+        verbose_name_plural = "Certificates"
+
+        ordering = ["-issued_date"]
+
+        indexes = [
+            models.Index(fields=["certificate_id"]),
+            models.Index(fields=["student_email"]),
+            models.Index(fields=["issued_date"]),
+        ]
+
+    def save(self, *args, **kwargs):
+
+        if not self.certificate_id:
+
+            last_certificate = (
+                Certificate.objects
+                .order_by("-created_at")
+                .first()
+            )
+
+            if last_certificate and last_certificate.certificate_id:
+
+                match = re.search(
+                    r"(\d+)$",
+                    last_certificate.certificate_id
+                )
+
+                next_number = (
+                    int(match.group(1)) + 1
+                ) if match else 1
+
+            else:
+                next_number = 1
+
+            self.certificate_id = (
+                f"STEPUPMARK-CERT-{next_number:06d}"
+            )
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.certificate_id

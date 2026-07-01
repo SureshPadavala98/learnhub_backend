@@ -33,6 +33,9 @@ from core.utils.common_models import (
 from super_admin.services.student_services import (
     CertificateTemplateService,
 )
+from super_admin.services.qr_service import (
+    QRCodeService,
+)
 
 class TestimonialCreateListAPIView(APIView):
     permission_classes = [IsAdminOrStudent]
@@ -202,17 +205,29 @@ class CertificateCreateListAPIView(BaseAPIView):
     permission_classes = [IsAdmin]
 
     def post(self, request):
-        serializer = CertificateSerializer(data=request.data)
+
+        serializer = CertificateSerializer(
+            data=request.data,
+            context={"request": request}
+        )
 
         serializer.is_valid(
             raise_exception=True
         )
 
-        serializer.save()
+        certificate = serializer.save()
+
+        QRCodeService.generate(certificate)
+
+        response = CertificateSerializer(
+            certificate,
+            context={"request": request}
+        )
 
         return CustomResponse.success(
-            message="Certificate added successfully",
-            data=serializer.data
+            message="Certificate added successfully.",
+            data=response.data,
+            status_code=201,
         ) 
     
     def get(self,request):

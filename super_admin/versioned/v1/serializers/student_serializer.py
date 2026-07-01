@@ -81,45 +81,7 @@ class PlacementSerializer(serializers.ModelSerializer):
             "id",
             "created_at",
             "updated_at",
-        ]
-
-
-class CertificateSerializer(serializers.ModelSerializer):
-
-    course_name = serializers.CharField(source="course.title",read_only=True)
-
-    mentor_name = serializers.CharField(source="mentor.user.full_name",read_only=True)
-
-    class Meta:
-        model = Certificate
-
-        fields = [
-            "id",
-            "certificate_id",
-            "student_name",
-            "student_email",
-            "course",
-            "course_name",
-            "mentor",
-            "mentor_name",
-            "certificate_file",
-            "issued_date",
-            "grade",
-            "remarks",
-            "is_verified",
-            "created_at",
-            "updated_at",
-
-        ]
-
-        read_only_fields = (
-            "id",
-            "certificate_id",
-            "created_at",
-            "updated_at",
-        )
-    
-
+        ]    
 
 class CertificateTemplateSerializer(serializers.ModelSerializer):
 
@@ -171,3 +133,67 @@ class CertificateTemplateSerializer(serializers.ModelSerializer):
             )
 
         return value
+
+
+
+class CertificateSerializer(serializers.ModelSerializer):
+
+    course_name = serializers.CharField(
+        source="course.title",
+        read_only=True
+    )
+
+    mentor_name = serializers.CharField(
+        source="mentor.user.full_name",
+        read_only=True
+    )
+
+    template = serializers.PrimaryKeyRelatedField(
+        queryset=CertificateTemplate.objects.filter(
+            is_active=True
+        )
+    )
+
+    template_details = CertificateTemplateSerializer(
+        source="template",
+        read_only=True
+    )
+
+    class Meta:
+        model = Certificate
+
+        fields = [
+            "id",
+            "certificate_id",
+
+            "student_name",
+            "student_email",
+
+            "course",
+            "course_name",
+
+            "template",
+            "template_details",
+
+            "mentor",
+            "mentor_name",
+
+            "certificate_file",
+
+            "issued_date",
+
+            "grade",
+            "remarks",
+
+            "is_verified",
+
+            "created_at",
+            "updated_at",
+        ]
+
+        read_only_fields = (
+            "id",
+            "certificate_id",
+            "created_at",
+            "updated_at",
+        )

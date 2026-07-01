@@ -18,10 +18,11 @@ urlpatterns = [
 
     # Certificate Template
     path('certificate-templates/', student_views.CertificateTemplateCreateAPIView.as_view(), name='certificate-templates'),
-    path('certificate-template-detail/<uuid:template_id>/', student_views.CertificateTemplateDetailAPIView.as_view(), name='certificate-templates'),
+    path('certificate-template-detail/<uuid:template_id>/', student_views.CertificateTemplateDetailAPIView.as_view(), name='certificate-template-detail'),
 
     # Certificates
     path('certificates/', student_views.CertificateCreateListAPIView.as_view(), name="students-certificates"),
-    path('certificate-detail/<uuid:id>/', student_views.CertificateDetailAPIView.as_view(), name='student-placement-detail'),
+    path('certificate-detail/<uuid:id>/', student_views.CertificateDetailAPIView.as_view(), name='certificate-detail'),
+    path("certificate/verify/<str:certificate_id>/",student_views.CertificateVerifyAPIView.as_view(),name='certificate-verify')
     
 ]

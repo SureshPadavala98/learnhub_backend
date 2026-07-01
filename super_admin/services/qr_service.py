@@ -1,20 +1,14 @@
-import os
+import io
 
 import qrcode
 
-from django.conf import settings
-from django.core.files import File
+from django.core.files.base import ContentFile
 
 
 class QRCodeService:
 
     @staticmethod
-    def generate(certificate):
-
-        verify_url = (
-            f"https://stepupmark.com/verify/"
-            f"{certificate.certificate_id}"
-        )
+    def generate(certificate, verify_url):
 
         qr = qrcode.QRCode(
             version=1,
@@ -32,35 +26,14 @@ class QRCodeService:
             back_color="white"
         )
 
-        filename = (
-            f"{certificate.certificate_id}.png"
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+
+        certificate.qr_code.save(
+            f"{certificate.certificate_id}.png",
+            ContentFile(buffer.getvalue()),
+            save=False,
         )
-
-        directory = os.path.join(
-            settings.MEDIA_ROOT,
-            "certificates",
-            "qr_codes",
-        )
-
-        os.makedirs(
-            directory,
-            exist_ok=True
-        )
-
-        filepath = os.path.join(
-            directory,
-            filename,
-        )
-
-        image.save(filepath)
-
-        with open(filepath, "rb") as f:
-
-            certificate.qr_code.save(
-                filename,
-                File(f),
-                save=False,
-            )
 
         certificate.save(
             update_fields=["qr_code"]

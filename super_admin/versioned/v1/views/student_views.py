@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework import status
-from django.shortcuts import get_list_or_404, get_object_or_404
-from django.shortcuts import get_list_or_404, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from core.helpers.custom_response_hander import CustomResponse
 from core.helpers.custom_pagination import (
     CustomPageNumberPagination
@@ -217,7 +217,14 @@ class CertificateCreateListAPIView(BaseAPIView):
 
         certificate = serializer.save()
 
-        QRCodeService.generate(certificate)
+        verify_url = request.build_absolute_uri(
+            reverse(
+                "certificate-verify",
+                kwargs={"certificate_id": certificate.certificate_id},
+            )
+        )
+
+        QRCodeService.generate(certificate, verify_url)
 
         response = CertificateSerializer(
             certificate,
@@ -367,3 +374,22 @@ class CertificateTemplateDetailAPIView(BaseAPIView):
             message="Certificate Template deleted fetched successfully",
             data={}
         )
+    
+
+class CertificateVerifyAPIView(APIView):
+    permission_classes = []
+
+    def get(self, request, certificate_id):
+        certificate = get_object_or_404(
+            Certificate,
+            certificate_id=certificate_id,
+            is_active=True
+        )
+
+        if not certificate.certificate_file:
+            return CustomResponse.error(
+                message="Certificate file not available.",
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+
+        return redirect(certificate.certificate_file.url)

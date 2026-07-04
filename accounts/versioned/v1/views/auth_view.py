@@ -10,18 +10,31 @@ from core.helpers.custom_response_hander import (
     CustomResponse
 )
 from accounts.services.auth_service import (
-    AuthService
+    AuthService,
+    StudentProfileService
 )
 from accounts.versioned.v1.serializers.auth_serializer import (
     RegisterSerializer,
     LoginSerializer,
     LogoutSerializer,
-    MentorRegistrationSerializer
+    MentorRegistrationSerializer,
+    StudentProfileSerializer
 )
 from mentor.models.courses import (
     Mentor
 )
-
+from core.utils.common_models import (
+    CommonModel,
+    BaseAPIView,
+)
+from core.helpers.permissions import (
+    IsAdmin,
+    IsStudent,
+    IsMentor,
+    IsAdminOrMentor,
+    IsAdminOrStudent,
+    IsVerifiedUser
+)
 
 class RegisterAPIView(APIView):
     authentication_classes = []
@@ -134,3 +147,70 @@ class LogoutAPIView(APIView):
             data={}
         )
     
+
+class StudentProfileAPIView(BaseAPIView):
+
+    permission_classes = [IsStudent]
+
+    def get(self, request):
+
+        profile = StudentProfileService.get_or_create_profile(
+            request.user
+        )
+
+        serializer = StudentProfileSerializer(
+            profile,
+            context={"request": request}
+        )
+
+        return CustomResponse.success(
+            message="Profile fetched successfully.",
+            data=serializer.data
+        )
+
+    def put(self, request):
+
+        profile = StudentProfileService.get_or_create_profile(
+            request.user
+        )
+
+        serializer = StudentProfileSerializer(
+            profile,
+            data=request.data,
+            context={"request": request}
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        serializer.save()
+
+        return CustomResponse.success(
+            message="Profile updated successfully.",
+            data=serializer.data
+        )
+
+    def patch(self, request):
+
+        profile = StudentProfileService.get_or_create_profile(
+            request.user
+        )
+
+        serializer = StudentProfileSerializer(
+            profile,
+            data=request.data,
+            partial=True,
+            context={"request": request}
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        serializer.save()
+
+        return CustomResponse.success(
+            message="Profile updated successfully.",
+            data=serializer.data
+        )

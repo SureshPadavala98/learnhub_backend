@@ -11,6 +11,9 @@ urlpatterns = [
 
     path('mentor/register/',auth_view.MentorRegisrationAPIView.as_view(),name='mentor-register'),
 
+    # Student Profile
+    path("student/profile/",auth_view.StudentProfileAPIView.as_view(),name="student-profile",),
+
     # OTP'S
     path('send_otp/',otp_view.SendEmailOTPAPIView.as_view()),
     path('verify_otp/',otp_view.VerifyOTPAPIView.as_view()),

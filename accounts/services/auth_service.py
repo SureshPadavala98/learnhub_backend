@@ -6,7 +6,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import datetime
 import random
 from accounts.models.user_model import (
-    User
+    User,
+    Profile,
 )
 
 class AuthService:
@@ -74,3 +75,11 @@ class AuthService:
             "refresh_token": str(refresh),
         }
 
+class StudentProfileService:
+
+    @staticmethod
+    def get_or_create_profile(user):
+
+        profile, _ = Profile.objects.get_or_create(user=user)
+
+        return profile

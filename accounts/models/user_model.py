@@ -75,7 +75,19 @@ class Profile(CommonModel):
     phone = models.CharField(max_length=15,blank=True)
     profile_picture = models.ImageField(upload_to="profiles/",blank=True,null=True)
     bio = models.TextField(blank=True)
-
+    date_of_birth = models.DateField(blank=True,null=True)
+    city = models.CharField(max_length=100,blank=True)
+    state = models.CharField(max_length=100,blank=True)
+    gender = models.CharField(max_length=20,blank=True)
+    qualification = models.CharField(max_length=150,blank=True)
+    college_name = models.CharField(max_length=200,blank=True)
+    graduation_year = models.PositiveIntegerField(blank=True,null=True)
+    current_company = models.CharField(max_length=150,blank=True)
+    experience = models.PositiveIntegerField(default=0,help_text="Experience in years")
+    linkedin_url = models.URLField(blank=True)
+    github_url = models.URLField(blank=True)
+    resume = models.FileField(upload_to="profiles/resumes/",blank=True,null=True)
+    skills = models.TextField(blank=True,help_text="Comma separated skills")
     class Meta:
         db_table = "profiles"
         verbose_name = "Profile"
@@ -83,7 +95,7 @@ class Profile(CommonModel):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.user.username}-Profile"
+        return f"{self.user.full_name}-Profile"
     
 
 

@@ -11,12 +11,14 @@ from super_admin.models.student_models import (
     Placement,
     Certificate,
     CertificateTemplate,
+    Enrollment,
 )
 from super_admin.versioned.v1.serializers.student_serializer import (
     TestimonialSerializer,
     PlacementSerializer,
     CertificateSerializer,
     CertificateTemplateSerializer,
+    CourseEnrollmentSerializer,
 
 )
 from core.helpers.permissions import (
@@ -393,3 +395,83 @@ class CertificateVerifyAPIView(APIView):
             )
 
         return redirect(certificate.certificate_file.url)
+    
+
+
+class CourseEnrollmentCreateListAPIView(BaseAPIView):
+    permission_classes = [IsAdminOrStudent]
+
+    def post(self,request):
+
+        serializer = CourseEnrollmentSerializer(data=request.data,context={"request":request})
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        serializer.save()
+
+        return CustomResponse.success(
+            message="Course Enrollment created successfully.",
+            data=serializer.data,
+            status_code=201,
+        )
+    
+    
+    def get(self, request):
+
+        course_enrollments = Enrollment.objects.filter(student=request.user,is_active=True).order_by("-created_at")
+
+        paginator, paginated_categories = self.paginate_queryset(course_enrollments,request)
+
+        serializer = CourseEnrollmentSerializer(paginated_categories,many=True,context={"request": request})
+
+        paginated_response = paginator.get_paginated_response(serializer.data)
+        
+        return CustomResponse.success(
+            message="Course Enrollments fetched successfully",
+            data=paginated_response.data
+        )
+    
+
+class CourseEnrollmentDetailAPIView(BaseAPIView):
+
+    permission_classes = [IsAdminOrStudent]
+
+    def get(self, request,enrolled_id):
+        
+        course_enrollment_obj = get_object_or_404(Enrollment,pk=enrolled_id,is_active=True)
+
+        serializer = CourseEnrollmentSerializer(course_enrollment_obj,context={"request": request})
+        
+        return CustomResponse.success(
+            message="Course Enrollment fetched successfully",
+            data=serializer.data
+        )
+
+
+    def put(self, request,enrolled_id):
+        course_enrollment_obj = get_object_or_404(Enrollment,pk=enrolled_id,is_active=True)
+
+        serializer = CourseEnrollmentSerializer(course_enrollment_obj,data=request.data,partial=True)
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        serializer.save()
+
+        return CustomResponse.success(
+            message="Course Enrollment Updated successfully",
+            data=serializer.data
+        )
+    
+    def delete(self,request, enrolled_id):
+        course_enrollment_obj = get_object_or_404(Enrollment,pk=enrolled_id,is_active=True)
+
+        course_enrollment_obj.delete()
+        
+        return CustomResponse.success(
+            message="Course Enrollment deleted fetched successfully",
+            data={}
+        )

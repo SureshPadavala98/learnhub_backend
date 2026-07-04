@@ -1,7 +1,16 @@
 import re
 from django.db import models
 from core.utils.common_models import CommonModel
-
+from accounts.models.user_model import (
+    User,
+)
+from mentor.models.courses import (
+    Course
+)
+from core.utils.choice_fields import (
+    EnrollmentType,
+    EnrollmentStatus,
+)
 class Testimonial(CommonModel):
     student_name = models.CharField(max_length=150)
 
@@ -194,3 +203,36 @@ class Certificate(CommonModel):
 
     def __str__(self):
         return self.certificate_id
+    
+
+class Enrollment(CommonModel):
+    student = models.ForeignKey(User,on_delete=models.CASCADE,related_name="enrollments",)
+    course = models.ForeignKey(Course,on_delete=models.PROTECT,related_name="enrollments",)
+    enrollment_type = models.CharField(max_length=10,choices=EnrollmentType.choices,default=EnrollmentType.PAID,)
+    status = models.CharField(max_length=20,choices=EnrollmentStatus.choices,default=EnrollmentStatus.PENDING,)
+    enrolled_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True,blank=True,)
+    completed_at = models.DateTimeField(null=True,blank=True,)
+    completion_percentage = models.PositiveSmallIntegerField(default=0,help_text="Course completion percentage (0-100)")
+    remarks = models.TextField(blank=True)
+    class Meta:
+        db_table = "enrollments"
+        verbose_name = "Enrollment"
+        verbose_name_plural = "Enrollments"
+        ordering = ["-enrolled_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["student", "course"],
+                name="unique_student_course_enrollment",
+            )
+        ]
+
+        indexes = [
+            models.Index(fields=["student"]),
+            models.Index(fields=["course"]),
+            models.Index(fields=["status"]),
+            models.Index(fields=["enrolled_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.student.full_name} - {self.course.title}"

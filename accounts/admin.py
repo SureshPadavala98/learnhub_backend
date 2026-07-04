@@ -4,10 +4,12 @@ from django.contrib.auth.admin import UserAdmin
 from accounts.models import User
 from accounts.models.user_model import (
     VerificationOTP,
+    Profile,
     
 )
 
 admin.site.register(VerificationOTP)
+admin.site.register(Profile)
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):

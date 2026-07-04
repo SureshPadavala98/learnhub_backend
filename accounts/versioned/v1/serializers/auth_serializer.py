@@ -2,7 +2,9 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from accounts.models.user_model import (
-    User
+    User,
+    Profile,
+
 )
 from core.utils.choice_fields import (
     UserRole
@@ -87,3 +89,61 @@ class MentorRegistrationSerializer(serializers.Serializer):
     years_of_experience = serializers.IntegerField(min_value=0)
     profile_image = serializers.ImageField(required=False,allow_null=True)
     expertise = serializers.CharField(max_length=200)
+
+
+
+class StudentProfileSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source="user.full_name",read_only=True)
+
+    class Meta:
+        model = Profile
+        fields = [
+            "id",
+            "user",
+            "user_name",
+            "phone",
+            "profile_picture",
+            "bio",
+            "city",
+            "state",
+            "date_of_birth",
+            "gender",
+            "qualification",
+            "college_name",
+            "graduation_year",
+            "current_company",
+            "experience",
+            "linkedin_url",
+            "github_url",
+            "resume",
+            "skills",
+            "created_at",
+            "updated_at"
+
+        ]
+
+        read_only_fields= [
+            "id",
+            "user",
+            "created_at",
+            "updated_at"
+        ]
+
+    def validate_phone(self, value):
+
+        if value and not value.isdigit():
+            raise serializers.ValidationError(
+                "Phone number must contain only digits."
+            )
+
+        return value
+    
+    def validate_experience(self, value):
+
+        if value < 0:
+            raise serializers.ValidationError(
+                "Experience cannot be negative."
+            )
+
+        return value
+    

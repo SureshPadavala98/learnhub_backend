@@ -4,7 +4,7 @@ from super_admin.models.student_models import (
     Placement,
     Certificate,
     CertificateTemplate,
-    
+    Enrollment,
 )
 
 
@@ -183,6 +183,36 @@ class CertificateSerializer(serializers.ModelSerializer):
             "id",
             "certificate_id",
             "qr_code",
+            "created_at",
+            "updated_at",
+        )
+
+
+class CourseEnrollmentSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source="student.full_name",read_only=True)
+    course_name = serializers.CharField(source="course.title",read_only=True)
+    class Meta:
+        model = Enrollment
+        fields = [
+            "id",
+            "student",
+            "student_name",
+            "course",
+            "course_name",
+            "enrollment_type",
+            "status",
+            "enrolled_at",
+            "started_at",
+            "completed_at",
+            "completion_percentage",
+            "remarks",
+            "created_at",
+            "updated_at"
+        ]
+
+        read_only_fields = (
+            "id",
+            "course"
             "created_at",
             "updated_at",
         )

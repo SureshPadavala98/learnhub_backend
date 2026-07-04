@@ -5,7 +5,9 @@ from mentor.models.courses import (
     CourseInquiry,
 )
 from core.utils.choice_fields import InquiryStatus
-
+from super_admin.models.site_configuration_model import (
+    SiteConfiguration
+)
 
 class DashboardService:
 
@@ -29,3 +31,18 @@ class DashboardService:
             "enrolled_inquiries": CourseInquiry.objects.filter(status=InquiryStatus.ENROLLED).count(),
 
         }
+    
+
+class SiteConfigurationService:
+
+    @staticmethod
+    def create_site_configuration(validated_data):
+
+        if SiteConfiguration.objects.exists():
+            raise ValueError(
+                "Site configuration already exists."
+            )
+
+        return SiteConfiguration.objects.create(
+            **validated_data
+        )

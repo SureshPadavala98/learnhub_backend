@@ -35,3 +35,14 @@ class UserStatus(models.TextChoices):
     PENDING = "pending", "Pending"
     APPROVED = "approved", "Approved"
     REJECTED = "rejected", "Rejected"
+
+class EnrollmentType(models.TextChoices):
+    FREE = "free", "Free"
+    PAID = "paid", "Paid"
+
+
+class EnrollmentStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    ACTIVE = "active", "Active"
+    COMPLETED = "completed", "Completed"
+    CANCELLED = "cancelled", "Cancelled"

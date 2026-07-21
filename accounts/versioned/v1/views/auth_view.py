@@ -18,7 +18,8 @@ from accounts.versioned.v1.serializers.auth_serializer import (
     LoginSerializer,
     LogoutSerializer,
     MentorRegistrationSerializer,
-    StudentProfileSerializer
+    StudentProfileSerializer,
+    ResetPasswordSerializer
 )
 from mentor.models.courses import (
     Mentor
@@ -151,6 +152,32 @@ class LogoutAPIView(APIView):
             data={}
         )
     
+
+class ResetPasswordAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+
+        serializer = ResetPasswordSerializer(data=request.data)
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        validated_data = serializer.validated_data
+
+        AuthService.reset_password(
+            validated_data["user"],
+            validated_data["new_password"],
+        )
+
+        return CustomResponse.success(
+            message="Password reset successful. Please login with your new password.",
+            data={},
+            status_code=status.HTTP_200_OK
+        )
+
 
 class StudentProfileAPIView(BaseAPIView):
 

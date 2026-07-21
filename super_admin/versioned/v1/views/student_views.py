@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework import status
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect,get_list_or_404
+from rest_framework.permissions import AllowAny
 from django.urls import reverse
 from core.helpers.custom_response_hander import CustomResponse
 from core.helpers.custom_pagination import (
@@ -30,13 +31,26 @@ from core.helpers.permissions import (
     IsVerifiedUser
 )
 from core.utils.common_models import (
-    BaseAPIView
+    BaseAPIView,
+    PublicAPIView,
+
 )
 from super_admin.services.student_services import (
     CertificateTemplateService,
 )
 from super_admin.services.qr_service import (
     QRCodeService,
+)
+from mentor.models.courses import (
+    CourseCategory,
+    Course,
+    Mentor,
+    CourseInquiry,
+)
+from super_admin.versioned.v1.serializers.course_serializer import (
+    CourseSerializer,
+    CoursesListDropDownSerializer,
+    MentorDropDownSerializer,
 )
 
 class TestimonialCreateListAPIView(APIView):
@@ -45,7 +59,7 @@ class TestimonialCreateListAPIView(APIView):
 
     def post(self, request):
 
-        serializer = TestimonialSerializer(data=request.data)
+        serializer = TestimonialSerializer(data=request.data,context={"request":request})
 
         serializer.is_valid(
             raise_exception=True
@@ -474,4 +488,33 @@ class CourseEnrollmentDetailAPIView(BaseAPIView):
         return CustomResponse.success(
             message="Course Enrollment deleted fetched successfully",
             data={}
+        )
+    
+
+class CoursesListDropDownAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self,request):
+
+        courses = get_list_or_404(Course,is_active=True)
+
+        serializer = CoursesListDropDownSerializer(courses,many=True,context={"request": request})
+
+        return CustomResponse.success(
+            message="Courses fetched successfully",
+            data=serializer.data
+        )
+
+
+class MentorListDropDownAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self,request):
+        mentors = Mentor.objects.select_related('user').filter(is_active=True).order_by('-created_at')
+
+        serializer = MentorDropDownSerializer(mentors,many=True,context={"request":request})
+
+        return CustomResponse.success(
+            message="Mentors fetched successfully",
+            data =serializer.data,
         )

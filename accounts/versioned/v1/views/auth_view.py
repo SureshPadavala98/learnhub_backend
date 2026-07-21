@@ -48,7 +48,7 @@ class RegisterAPIView(APIView):
             raise_exception=True
         )
 
-        user = AuthService.create_base_user(
+        pending_registration = AuthService.create_pending_registration(
             full_name=serializer.validated_data['full_name'],
             email=serializer.validated_data['email'],
             password=serializer.validated_data['password'],
@@ -56,8 +56,12 @@ class RegisterAPIView(APIView):
         )
 
         return CustomResponse.success(
-            message="User registered successfully",
-            data=serializer.data,
+            message="Registration initiated. Please verify your email with the OTP sent to complete registration.",
+            data={
+                "email": pending_registration.email,
+                "full_name": pending_registration.full_name,
+                "role": pending_registration.role,
+            },
             status_code=status.HTTP_201_CREATED
         )
     

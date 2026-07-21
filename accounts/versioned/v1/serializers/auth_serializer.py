@@ -41,23 +41,35 @@ class RegisterSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+    role = serializers.CharField(required=True)
 
     def validate(self,attrs):
         email = attrs.get('email')
         password = attrs.get('password')
+        role = attrs.get("role")
 
         user = authenticate(username=email,password=password)
 
         if not user:
-            raise serializers.ValidationError(
-                "Invalid email or password."
-            )
+            raise serializers.ValidationError({
+                "credientials": "Invalid email or password."
+            })
+        
+        if user.role != role:
+            raise serializers.ValidationError({
+                "credientials": "Invalid email or password."
+            })
         
         if not user.is_active:
             raise serializers.ValidationError(
                 "User account is inactive."
             )
-        
+
+        if not user.is_email_verified:
+            raise serializers.ValidationError(
+                "Please verify your email before logging in."
+            )
+
         attrs["user"] = user
 
         return attrs

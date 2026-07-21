@@ -5,11 +5,13 @@ from accounts.models import User
 from accounts.models.user_model import (
     VerificationOTP,
     Profile,
-    
+    PendingRegistration,
+
 )
 
 admin.site.register(VerificationOTP)
 admin.site.register(Profile)
+admin.site.register(PendingRegistration)
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):

@@ -2,7 +2,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from accounts.models.user_model import (
-    User
+    User,
+    PendingRegistration,
 )
 from accounts.versioned.v1.serializers.otp_serializer import (
     OTPSerializer,
@@ -43,15 +44,20 @@ class SendEmailOTPAPIView(APIView):
 
         otp_type = validated_data["otp_type"]
 
-        user = validated_data.get("user")
-
-        otp = OTPService.create_otp(user=user,otp_type=otp_type)
+        if otp_type == "EMAIL_VERIFICATION":
+            pending_registration = validated_data["pending_registration"]
+            otp = OTPService.create_pending_registration_otp(pending_registration)
+            user_name = pending_registration.full_name
+        else:
+            user = validated_data.get("user")
+            otp = OTPService.create_otp(user=user,otp_type=otp_type)
+            user_name = user.full_name if user else ""
 
         try:
             EmailService.send_otp_email(
                 email=email,
                 otp=otp,
-                user_name=user.full_name if user else "",
+                user_name=user_name,
                 otp_type=otp_type,
             )
         except EmailDeliveryError as exc:
@@ -84,33 +90,40 @@ class VerifyOTPAPIView(APIView):
 
         otp_type = validated_data["otp_type"]
 
-        user = User.objects.filter(email=email).first()
+        if otp_type == "EMAIL_VERIFICATION":
 
-        if not user:
+            pending_registration = PendingRegistration.objects.filter(email=email).first()
 
-            return CustomResponse.error(
-                message="User not found",
-                status_code=status.HTTP_404_NOT_FOUND
+            if not pending_registration:
+
+                return CustomResponse.error(
+                    message="Registration not found. Please register again.",
+                    status_code=status.HTTP_404_NOT_FOUND
+                )
+
+            OTPService.verify_pending_registration_otp(
+                pending_registration=pending_registration,
+                otp=otp,
             )
 
-        OTPService.verify_otp(
-            user=user,
-            otp=otp,
-            otp_type=otp_type,
-        )
+            # Only now is the user actually persisted to the database
+            user = AuthService.create_user_from_pending(pending_registration)
 
-        # Activate account
-        if (otp_type == "EMAIL_VERIFICATION"):
+        else:
 
-            user.is_email_verified = True
+            user = User.objects.filter(email=email).first()
 
-            user.is_active = True
+            if not user:
 
-            user.save(
-                update_fields=[
-                    "is_email_verified",
-                    "is_active",
-                ]
+                return CustomResponse.error(
+                    message="User not found",
+                    status_code=status.HTTP_404_NOT_FOUND
+                )
+
+            OTPService.verify_otp(
+                user=user,
+                otp=otp,
+                otp_type=otp_type,
             )
 
         # Generate JWT

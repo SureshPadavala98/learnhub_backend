@@ -85,7 +85,12 @@ class AuthService:
     def logout_user(refresh_token):
         token = RefreshToken(refresh_token)
         token.blacklist()
-        
+
+    @staticmethod
+    def reset_password(user, new_password):
+        user.set_password(new_password)
+        user.save(update_fields=["password"])
+
 
     @staticmethod
     def create_tokens(user):

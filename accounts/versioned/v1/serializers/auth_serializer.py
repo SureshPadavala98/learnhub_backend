@@ -80,6 +80,34 @@ class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
 
 
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    new_password = serializers.CharField(write_only=True, min_length=8)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate_email(self, value):
+        email = value.lower()
+
+        if not User.objects.filter(email=email).exists():
+            raise serializers.ValidationError(
+                "User does not exist with this email."
+            )
+
+        return email
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['confirm_password']:
+            raise serializers.ValidationError(
+                {"confirm_password": "Passwords do not match."}
+            )
+
+        validate_password(attrs['new_password'])
+
+        attrs['user'] = User.objects.get(email=attrs['email'])
+
+        return attrs
+
+
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:

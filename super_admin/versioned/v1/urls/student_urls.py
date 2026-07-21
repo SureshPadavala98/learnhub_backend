@@ -25,6 +25,10 @@ urlpatterns = [
     path('certificate-detail/<uuid:id>/', student_views.CertificateDetailAPIView.as_view(), name='certificate-detail'),
     path("certificate/verify/<str:certificate_id>/",student_views.CertificateVerifyAPIView.as_view(),name='certificate-verify'),
 
+    # Drop Downs
+    path('courses-list-dropdown/',student_views.CoursesListDropDownAPIView.as_view(),name='courses-list-dropdown'),
+    path('mentors-list-dropdown/',student_views.MentorListDropDownAPIView.as_view(),name='mentors-list-dropdown'),
+
     path('course_enrollements/', student_views.CourseEnrollmentCreateListAPIView.as_view(), name='course-enrollements'),
     path('course-enrollement-detail/<uuid:enrolled_id>/', student_views.CourseEnrollmentDetailAPIView.as_view(), name='course-enrollement-detail'),
     

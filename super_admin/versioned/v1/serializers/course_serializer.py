@@ -146,3 +146,35 @@ class CourseEnquirySerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class CoursesListDropDownSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Course
+
+        fields = [
+            'id',
+            'title',
+            "slug",
+            "created_at",
+            "updated_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "slug",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class MentorDropDownSerializer(serializers.ModelSerializer):
+    mentor = serializers.CharField(source="user.full_name",read_only=True)
+    class Meta:
+        model = Mentor
+        fields = [
+            'id',
+            'user',
+            'mentor',
+        ]

@@ -3,26 +3,47 @@ from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.hashers import make_password
 from datetime import datetime
 import random
 from accounts.models.user_model import (
     User,
     Profile,
+    PendingRegistration,
 )
 
 class AuthService:
 
     @staticmethod
-    def create_base_user(*,full_name,email,password,role):
+    def create_pending_registration(*, full_name, email, password, role):
+        email = email.lower()
 
-        user = User.objects.create(
-                full_name=full_name,
-                email=email,
-                role=role,
-            )
-        
-        user.set_password(password)
+        PendingRegistration.objects.filter(email=email).delete()
+
+        pending_registration = PendingRegistration.objects.create(
+            full_name=full_name,
+            email=email,
+            password=make_password(password),
+            role=role,
+        )
+
+        return pending_registration
+
+    @staticmethod
+    def create_user_from_pending(pending_registration):
+
+        user = User(
+            full_name=pending_registration.full_name,
+            email=pending_registration.email,
+            role=pending_registration.role,
+            is_email_verified=True,
+            is_active=True,
+        )
+        user.password = pending_registration.password
+
         user.save()
+
+        pending_registration.delete()
 
         return user
 

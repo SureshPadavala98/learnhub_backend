@@ -7,7 +7,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password, check_password
-from accounts.models.user_model import VerificationOTP
+from accounts.models.user_model import VerificationOTP, PendingRegistration
 
 class EmailDeliveryError(Exception):
     pass
@@ -91,7 +91,57 @@ class OTPService:
         )
 
         return True
-    
+
+
+    @classmethod
+    def create_pending_registration_otp(cls, pending_registration):
+
+        otp = cls.generate_otp()
+
+        pending_registration.otp_hash = make_password(otp)
+        pending_registration.expires_at = now() + timedelta(minutes=cls.OTP_EXPIRY_MINUTES)
+        pending_registration.attempt_count = 0
+
+        pending_registration.save(
+            update_fields=["otp_hash", "expires_at", "attempt_count"]
+        )
+
+        return otp
+
+
+    @classmethod
+    def verify_pending_registration_otp(cls, pending_registration, otp):
+
+        if not pending_registration.otp_hash:
+            raise ValidationError(
+                "OTP not found"
+            )
+
+        # Expiry check
+        if now() > pending_registration.expires_at:
+            raise ValidationError(
+                "OTP expired"
+            )
+
+        # Attempt limit
+        if pending_registration.attempt_count >= cls.MAX_OTP_ATTEMPTS:
+            raise ValidationError(
+                "Maximum OTP attempts exceeded"
+            )
+
+        # Increment attempts
+        pending_registration.attempt_count += 1
+
+        pending_registration.save(update_fields=["attempt_count"])
+
+        # Verify hash
+        if not check_password(otp, pending_registration.otp_hash):
+            raise ValidationError(
+                "Invalid OTP"
+            )
+
+        return True
+
 
 class EmailService:
 

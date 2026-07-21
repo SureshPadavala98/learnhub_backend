@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 import uuid
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from core.helpers.custom_pagination import (
     CustomPageNumberPagination
 )
@@ -18,9 +19,17 @@ class BaseAPIView(APIView):
     pagination_class = CustomPageNumberPagination
 
     def paginate_queryset(self, queryset, request):
+        
         paginator = self.pagination_class()
         paginated_queryset = paginator.paginate_queryset(
             queryset,
             request
         )
         return paginator, paginated_queryset
+class AuthenticatedAPIView(BaseAPIView):
+    permission_classes = [IsAuthenticated]
+
+class PublicAPIView(BaseAPIView):
+    permission_classes = [AllowAny]
+    
+

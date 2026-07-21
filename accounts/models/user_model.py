@@ -99,6 +99,29 @@ class Profile(CommonModel):
     
 
 
+class PendingRegistration(CommonModel):
+    email = models.EmailField(unique=True)
+    full_name = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+    role = models.CharField(max_length=20, choices=UserRole.choices, default=UserRole.STUDENT)
+
+    otp_hash = models.CharField(max_length=255, blank=True, default="")
+    expires_at = models.DateTimeField(null=True, blank=True)
+    attempt_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = "pending_registrations"
+        verbose_name = "Pending Registration"
+        verbose_name_plural = "Pending Registrations"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["email"]),
+        ]
+
+    def __str__(self):
+        return f"Pending registration - {self.email}"
+
+
 class VerificationOTP(CommonModel):
     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name='verification_otps')
     otp_hash = models.CharField(max_length=255)
@@ -111,8 +134,8 @@ class VerificationOTP(CommonModel):
 
     class Meta:
         db_table = 'verification_otps'
-        verbose_name = 'Vefification OTP'
-        verbose_name_plural = 'Vefification OTPs'
+        verbose_name = 'Verification OTP'
+        verbose_name_plural = 'Verification OTPs'
 
         indexes = [
             models.Index(fields=['user']),

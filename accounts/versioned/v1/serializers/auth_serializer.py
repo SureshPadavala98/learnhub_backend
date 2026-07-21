@@ -80,6 +80,11 @@ class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
 
 
+class RefreshTokenSerializer(serializers.Serializer):
+
+    refresh = serializers.CharField()
+
+
 class ResetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
     new_password = serializers.CharField(write_only=True, min_length=8)

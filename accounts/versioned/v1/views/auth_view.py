@@ -19,7 +19,8 @@ from accounts.versioned.v1.serializers.auth_serializer import (
     LogoutSerializer,
     MentorRegistrationSerializer,
     StudentProfileSerializer,
-    ResetPasswordSerializer
+    ResetPasswordSerializer,
+    RefreshTokenSerializer
 )
 from mentor.models.courses import (
     Mentor
@@ -151,7 +152,30 @@ class LogoutAPIView(APIView):
             message="Logout successful",
             data={}
         )
-    
+
+
+class RefreshTokenAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+
+        serializer = RefreshTokenSerializer(data=request.data)
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        tokens = AuthService.refresh_tokens(
+            serializer.validated_data["refresh"]
+        )
+
+        return CustomResponse.success(
+            message="Token refreshed successfully",
+            data=tokens,
+            status_code=status.HTTP_200_OK
+        )
+
 
 class ResetPasswordAPIView(APIView):
     authentication_classes = []

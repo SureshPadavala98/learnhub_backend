@@ -135,7 +135,7 @@ class VerifyOTPAPIView(APIView):
             message="OTP verified successfully",
             data={
                 "user": user_data,
-                "tokens": tokens,
+                # "tokens": tokens,
             },
             status_code=status.HTTP_200_OK
         )

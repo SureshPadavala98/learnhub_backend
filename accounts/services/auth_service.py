@@ -3,6 +3,8 @@ from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.settings import api_settings as jwt_settings
 from django.contrib.auth.hashers import make_password
 from datetime import datetime
 import random
@@ -85,6 +87,34 @@ class AuthService:
     def logout_user(refresh_token):
         token = RefreshToken(refresh_token)
         token.blacklist()
+
+    @staticmethod
+    def refresh_tokens(refresh_token):
+        try:
+            refresh = RefreshToken(refresh_token)
+        except TokenError as exc:
+            raise serializers.ValidationError(str(exc))
+
+        access_token = refresh.access_token
+
+        if jwt_settings.ROTATE_REFRESH_TOKENS:
+
+            if jwt_settings.BLACKLIST_AFTER_ROTATION:
+                try:
+                    refresh.blacklist()
+                except AttributeError:
+                    pass
+
+            refresh.set_jti()
+            refresh.set_exp()
+            refresh.set_iat()
+
+        return {
+            "access_token": str(access_token),
+            "refresh_token": str(refresh),
+            "access_token_expiry": datetime.fromtimestamp(access_token["exp"]).isoformat(),
+            "refresh_token_expiry": datetime.fromtimestamp(refresh["exp"]).isoformat(),
+        }
 
     @staticmethod
     def reset_password(user, new_password):
